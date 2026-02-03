@@ -7,6 +7,7 @@ type ChatTurn = {
 }
 
 const extractText = (response: unknown): string => {
+  // Extrait rapidement le texte sans traitement lourd
   if (!response || typeof response !== 'object') return 'No response received.'
   const maybe = response as { message?: { content?: unknown } }
   const content = maybe.message?.content
@@ -19,23 +20,44 @@ const extractText = (response: unknown): string => {
 }
 
 export const AIExample = () => {
+  // États de gestion du chat
   const [input, setInput] = useState<string>('What can you do?')
   const [status, setStatus] = useState<string>('Idle')
   const [history, setHistory] = useState<ChatTurn[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
+  // Pour accélérer la réponse :
+  // 1. Afficher le message utilisateur IMMÉDIATEMENT (ne pas attendre l'API)
+  // 2. Utiliser un état de chargement "Loading..." dans le chat
+  // 3. Remplacer par la vraie réponse une fois reçue
   const sendChat = async () => {
     if (!input.trim()) return
+    
+    // OPTIMISATION: Ajouter le message utilisateur tout de suite
+    const userMessage = input.trim()
+    setHistory(prev => [...prev, { user: userMessage, ai: 'Loading...' }])
+    setInput('') // Réinitialiser l'input immédiatement
     setIsLoading(true)
     setStatus('Sending to Puter AI...')
+    
     try {
-      const response = await puter.ai.chat(input)
+      const response = await puter.ai.chat(userMessage)
       const text = extractText(response)
-      setHistory(prev => [...prev, { user: input.trim(), ai: text }])
-      setInput('')
+      // OPTIMISATION: Mettre à jour seulement le dernier message avec la réponse réelle
+      setHistory(prev => {
+        const updated = [...prev]
+        updated[updated.length - 1].ai = text
+        return updated
+      })
       setStatus('Reply received')
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      // OPTIMISATION: Afficher l'erreur dans le chat
+      setHistory(prev => {
+        const updated = [...prev]
+        updated[updated.length - 1].ai = `Error: ${message}`
+        return updated
+      })
       setStatus(`Error: ${message}`)
     } finally {
       setIsLoading(false)
