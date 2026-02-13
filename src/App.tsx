@@ -21,19 +21,15 @@ type ChatSession = {
   updatedAt: Date
 }
 
-/**
- * Extraction du texte depuis la réponse Puter
- */
+ 
 const extractText = (res: any): string => {
   if (!res) return "Réponse vide."
   
-  // Essayer le chemin le plus probable
-  if (res.message && res.message.content) {
+   if (res.message && res.message.content) {
     return res.message.content
   }
   
-  // Fallback
-  if (typeof res === "string") return res
+   if (typeof res === "string") return res
   if (res.response) return res.response
   if (res.result) return res.result
   
@@ -50,8 +46,7 @@ const App: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
 
-  // États
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     const saved = localStorage.getItem('chatSessions')
     if (saved) {
       try {
@@ -66,11 +61,9 @@ const App: React.FC = () => {
           }))
         }))
       } catch {
-        // En cas d'erreur, on crée une session par défaut
-      }
+       }
     }
-    // Session par défaut
-    const defaultSession: ChatSession = {
+     const defaultSession: ChatSession = {
       id: '1',
       title: 'Nouvelle conversation',
       messages: [
